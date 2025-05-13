@@ -1,0 +1,27 @@
+{
+  "name": "sniper-task",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.31.1",
+    "@grpc/grpc-js": "^1.13.3",
+    "@grpc/proto-loader": "^0.7.15",
+    "@solana/spl-token": "^0.4.13",
+    "@solana/web3.js": "^1.98.2",
+    "@types/express": "^5.0.1",
+    "axios": "^1.9.0",
+    "bs58": "^6.0.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "grpc-tools": "^1.13.0",
+    "ws": "^8.18.2",
+    "zeromq": "^6.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.17",
+    "ts-node": "^10.9.2",
+    "ts-protoc-gen": "^0.15.0",
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,0 +1,1 @@
+export {default as METEORABONDINGCURVEIDL} from './meteoraBondingCurve.json'
