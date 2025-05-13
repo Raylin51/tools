@@ -9,7 +9,7 @@ import { addPriorityFeeToTransaction, addCreateWsolAccount, createATAInstruction
 import { BN, Program } from '@coral-xyz/anchor'
 import { createCloseAccountInstruction, NATIVE_MINT } from '@solana/spl-token'
 import { TOKEN_PROGRAM_ID } from '@coral-xyz/anchor/dist/cjs/utils/token'
-import { signAndSendTransactionByBlox } from './utils/blox'
+import { signAndSendTransactionByBlox, signAndSendTransactionByNextBlock } from './utils/bdn'
 
 const blackListCreator = [
   'Add2YiY9ZNRpFf65XrXbDPizM5mTSLcGw3UHSAUKqUtd'
@@ -99,11 +99,10 @@ const handleTokenCreation = async (
   console.log(tokenMint)
   const startTimestamp = Date.now()
   console.log(`接受到的时间: ${new Date()}`)
-  // console.log(creator)
   let transaction = new Transaction()
 
   // 添加小费
-  transaction = addPriorityFeeToTransaction(transaction, 10000000, 120000)
+  transaction = addPriorityFeeToTransaction(transaction, 30000000, 200000)
 
   // 创建 wsol 账户
   const createWsolResult = await addCreateWsolAccount(transaction, wallet.publicKey, buyAmount)
@@ -146,26 +145,34 @@ const handleTokenCreation = async (
   ))
 
   // 设置最近的区块哈希
-  // const { blockhash } = await connection.getLatestBlockhash()
-  // transaction.recentBlockhash = blockhash
-  // transaction.feePayer = wallet.publicKey
+  const { blockhash } = await connection.getLatestBlockhash()
+  transaction.recentBlockhash = blockhash
+  transaction.feePayer = wallet.publicKey
 
-  // const signature = await sendAndConfirmTransaction(
-  //   connection,
-  //   transaction,
-  //   [wallet],
-  //   {
-  //     preflightCommitment: 'processed',
-  //   }
-  // )
-
-  // 提交给 blox 
-  const signature = await signAndSendTransactionByBlox(
+  const signature = await sendAndConfirmTransaction(
     connection,
     transaction,
-    wallet,
-    0.003
+    [wallet],
+    {
+      preflightCommitment: 'processed',
+    }
   )
+
+  // 提交给 blox 
+  // const signature = await signAndSendTransactionByBlox(
+  //   connection,
+  //   transaction,
+  //   wallet,
+  //   0.003
+  // )
+
+  // 提交给 next
+  // const signature = await signAndSendTransactionByNextBlock(
+  //   connection,
+  //   transaction,
+  //   wallet,
+  //   0.003
+  // )
 
   console.log('交易签名:', signature)
   console.log(`总消耗时间 ${Date.now() - startTimestamp}ms`)
