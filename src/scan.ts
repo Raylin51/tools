@@ -10,6 +10,7 @@ import { BN, Program } from '@coral-xyz/anchor'
 import { createCloseAccountInstruction, NATIVE_MINT } from '@solana/spl-token'
 import { TOKEN_PROGRAM_ID } from '@coral-xyz/anchor/dist/cjs/utils/token'
 import { signAndSendTransactionByBlox, signAndSendTransactionByNextBlock } from './utils/bdn'
+import { autoRetry } from './utils/autoRetry'
 
 const blackListCreator = [
   'Add2YiY9ZNRpFf65XrXbDPizM5mTSLcGw3UHSAUKqUtd'
@@ -119,11 +120,12 @@ const handleTokenCreation = async (
   })
   if (!metadataRes) return
   const twitterUsername = metadataRes.metadata.tweetCreatorUsername
-  const smartCheck = await axios.get(`https://api.discover.getmoni.io/api/v2/twitters/${twitterUsername}/info/smart_engagement/`, {
+  const smartCheck = await autoRetry(() => axios.get(`https://api.discover.getmoni.io/api/v2/twitters/${twitterUsername}/info/smart_engagement/`, {
     headers: {
       'Api-Key': moniAuth,
     }
-  })
+  }), 3, 300).catch(_ => console.log('Can\'t request moni api'))
+  if (!smartCheck) return
   const smartScore = smartCheck.data.smartEngagement.followersScore
   console.log(`@${twitterUsername} smart score: ${smartScore}`)
   if (smartScore < 50) return
