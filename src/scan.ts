@@ -20,7 +20,7 @@ const whiteListCreator = [
   '5qWya6UjwWnGVhdSBL3hyZ7B45jbk6Byt1hwd7ohEGXE'
 ]
 
-const buyAmount = 0.1
+const buyAmount = 0.2
 const rpc = process.env.RPC_URL
 const privatekey = process.env.PRIVATE_KEY
 const moniAuth = process.env.MONI_AUTH
@@ -111,20 +111,27 @@ const handleTokenCreation = async (
   //   "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
   //   }
   // })
+  const fetchMetadataStart = Date.now()
   const { verifiedFetch } = await import('@helia/verified-fetch')
   const res = await verifiedFetch(`ipfs://${cid}`).catch(error => console.log(`Can't fetch ${uri}`)) 
+  console.log(`Fetch metadata: ${Date.now() - fetchMetadataStart}ms`)
   if (!res) return
   const metadataRes = await res.json().catch(error => {
     console.log('Can\'t parse')
     console.log(res)
   })
-  if (!metadataRes) return
+  if (!metadataRes.metadata) return
   const twitterUsername = metadataRes.metadata.tweetCreatorUsername
+  if (!twitterUsername) return
+
+  // 开始查询聪明钱指数
+  const fetchSmartStart = Date.now()
   const smartCheck = await autoRetry(() => axios.get(`https://api.discover.getmoni.io/api/v2/twitters/${twitterUsername}/info/smart_engagement/`, {
     headers: {
       'Api-Key': moniAuth,
     }
   }), 3, 300).catch(_ => console.log('Can\'t request moni api'))
+  console.log(`Fetch smart: ${Date.now() - fetchSmartStart}ms`)
   if (!smartCheck) return
   const smartScore = smartCheck.data.smartEngagement.followersScore
   console.log(`@${twitterUsername} smart score: ${smartScore}`)
