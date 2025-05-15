@@ -22,6 +22,7 @@ const whiteListCreator = [
 const buyAmount = 0.1
 const rpc = process.env.RPC_URL
 const privatekey = process.env.PRIVATE_KEY
+const moniAuth = process.env.MONI_AUTH
 const BONDINGCURVE_PROGRAM_ID = new PublicKey('dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN')
 const maxPrice = 0.00005
 
@@ -92,11 +93,41 @@ const handleTokenCreation = async (
     base_vault: tokenVault,
     quote_vault: wsolVault,
     config,
+    uri,
   } = transactionData
+
+  console.log(tokenMint)
+  // 检查是不是通过推文发币
   signer.forEach(item => {
     if (!whiteListCreator.includes(item)) return
   })  
-  console.log(tokenMint)
+
+  // 检查是不是大 V
+  const cid = uri.split('/').pop()?.trim()
+  // const metadataRes = await axios.get(`https://ipfs.io/ipfs/${cid}`, {
+  //   headers: {
+  //     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+  //   "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+  //   }
+  // })
+  const { verifiedFetch } = await import('@helia/verified-fetch')
+  const res = await verifiedFetch(`ipfs://${cid}`).catch(error => console.log(`Can't fetch ${uri}`)) 
+  if (!res) return
+  const metadataRes = await res.json().catch(error => {
+    console.log('Can\'t parse')
+    console.log(res)
+  })
+  if (!metadataRes) return
+  const twitterUsername = metadataRes.metadata.tweetCreatorUsername
+  const smartCheck = await axios.get(`https://api.discover.getmoni.io/api/v2/twitters/${twitterUsername}/info/smart_engagement/`, {
+    headers: {
+      'Api-Key': moniAuth,
+    }
+  })
+  const smartScore = smartCheck.data.smartEngagement.followersScore
+  console.log(`@${twitterUsername} smart score: ${smartScore}`)
+  if (smartScore < 50) return
+
   const startTimestamp = Date.now()
   console.log(`接受到的时间: ${new Date()}`)
   let transaction = new Transaction()
@@ -145,18 +176,18 @@ const handleTokenCreation = async (
   ))
 
   // 设置最近的区块哈希
-  const { blockhash } = await connection.getLatestBlockhash()
-  transaction.recentBlockhash = blockhash
-  transaction.feePayer = wallet.publicKey
+  // const { blockhash } = await connection.getLatestBlockhash()
+  // transaction.recentBlockhash = blockhash
+  // transaction.feePayer = wallet.publicKey
 
-  const signature = await sendAndConfirmTransaction(
-    connection,
-    transaction,
-    [wallet],
-    {
-      preflightCommitment: 'processed',
-    }
-  )
+  // const signature = await sendAndConfirmTransaction(
+  //   connection,
+  //   transaction,
+  //   [wallet],
+  //   {
+  //     preflightCommitment: 'processed',
+  //   }
+  // )
 
   // 提交给 blox 
   // const signature = await signAndSendTransactionByBlox(
@@ -167,12 +198,12 @@ const handleTokenCreation = async (
   // )
 
   // 提交给 next
-  // const signature = await signAndSendTransactionByNextBlock(
-  //   connection,
-  //   transaction,
-  //   wallet,
-  //   0.003
-  // )
+  const signature = await signAndSendTransactionByNextBlock(
+    connection,
+    transaction,
+    wallet,
+    0.003
+  )
 
   console.log('交易签名:', signature)
   console.log(`总消耗时间 ${Date.now() - startTimestamp}ms`)
