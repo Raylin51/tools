@@ -20,6 +20,10 @@ const whiteListCreator = [
   '5qWya6UjwWnGVhdSBL3hyZ7B45jbk6Byt1hwd7ohEGXE'
 ]
 
+const blackListTwitter = [
+  'villainmonkey'
+]
+
 const buyAmount = 0.2
 const rpc = process.env.RPC_URL
 const privatekey = process.env.PRIVATE_KEY
@@ -109,8 +113,8 @@ const handleTokenCreation = async (
   const fetchMetadataStart = Date.now()
   // const metadataRes = (await axios.get(`https://ipfs.io/ipfs/${cid}`, {
   //   headers: {
-  //     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-  //   "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+  //    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+  //    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
   //   }
   // })).data
   const { verifiedFetch } = await import('@helia/verified-fetch')
@@ -124,6 +128,7 @@ const handleTokenCreation = async (
   if (!metadataRes.metadata) return
   const twitterUsername = metadataRes.metadata.tweetCreatorUsername
   if (!twitterUsername) return
+  if (blackListTwitter.includes(twitterUsername)) return
 
   // 开始查询聪明钱指数
   const fetchSmartStart = Date.now()
