@@ -21,7 +21,8 @@ const whiteListCreator = [
 ]
 
 const blackListTwitter = [
-  'villainmonkey'
+  'villainmonkey',
+  'STACCoverflow',
 ]
 
 const buyAmount = 1
