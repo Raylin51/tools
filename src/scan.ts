@@ -24,12 +24,12 @@ const blackListTwitter = [
   'villainmonkey'
 ]
 
-const buyAmount = 0.2
+const buyAmount = 1
 const rpc = process.env.RPC_URL
 const privatekey = process.env.PRIVATE_KEY
 const moniAuth = process.env.MONI_AUTH
 const BONDINGCURVE_PROGRAM_ID = new PublicKey('dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN')
-const maxPrice = 0.00005
+const maxPrice = 0.00007
 
 if (!rpc) throw Error('先在 .env 中配置 RPC 变量')
 if (!privatekey) throw Error('现在 .env 中配置 PRIVATE_KEY 变量')
